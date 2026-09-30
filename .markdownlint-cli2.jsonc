@@ -1,0 +1,22 @@
+{
+  "config": {
+    "default": true,
+    // Prose is not hard wrapped.
+    "MD013": false,
+    "MD060": false,
+    // Inline HTML is allowed (badges, details blocks).
+    "MD033": false,
+    // Files may start with badges or a language link before the H1.
+    "MD041": false,
+    // Repeated headings are fine in different sections.
+    "MD024": { "siblings_only": true },
+    // Allow bold lines as pseudo headings in FAQs.
+    "MD036": false,
+    // Allow ordered lists numbered either way.
+    "MD029": false
+  },
+  "ignores": [
+    "node_modules/**",
+    ".github/PULL_REQUEST_TEMPLATE.md"
+  ]
+}

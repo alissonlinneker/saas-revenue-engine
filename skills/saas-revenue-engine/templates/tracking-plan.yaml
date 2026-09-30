@@ -1,0 +1,448 @@
+# Tracking plan template for a B2B SaaS product.
+# Adapt names, properties, and stages to your product. Keep this file in the
+# repository, review changes in pull requests, and generate typed tracking
+# helpers from it. See references/09-data-and-instrumentation.md.
+
+version: 1
+naming:
+  convention: object_action
+  case: snake_case
+  tense: past
+  rules:
+    - Event names use a singular noun followed by a past tense verb.
+    - Property names are snake_case nouns.
+    - Money is an integer in minor currency units plus an ISO 4217 currency code.
+    - Timestamps are ISO 8601 in UTC.
+    - Never put email, names, phone numbers, or free text typed by users in properties.
+
+lifecycle_stages:
+  - visitor
+  - lead
+  - marketing_qualified
+  - product_qualified
+  - sales_accepted
+  - opportunity
+  - trialing
+  - customer_onboarding
+  - customer_active
+  - expanded
+  - at_risk
+  - churned
+  - reactivated
+
+sources:
+  client: Emitted by the browser or mobile SDK. May be lost to blockers or missing consent.
+  server: Emitted by the backend after the action is committed to the database.
+  webhook: Emitted by the backend while processing a verified third-party webhook.
+
+common_properties:
+  description: Required on every event. Added automatically by the tracking wrapper.
+  properties:
+    event_id: {type: string, format: uuid, description: Unique ID used for deduplication}
+    event_name: {type: string}
+    occurred_at: {type: string, format: date-time}
+    source: {type: string, enum: [client, server, webhook, backfill]}
+    schema_version: {type: integer}
+    environment: {type: string, enum: [production, staging, development]}
+    anonymous_id: {type: string, required_when: user_id is absent}
+    user_id: {type: string, required_when: user is authenticated}
+    account_id: {type: string, required_when: user belongs to an account}
+    is_internal: {type: boolean, description: True for employee and test accounts}
+
+revenue_properties:
+  description: Required on every billing, subscription change, and cancellation event.
+  properties:
+    billing_customer_id: {type: string}
+    subscription_id: {type: string}
+    plan_id: {type: string}
+    billing_interval: {type: string, enum: [month, year]}
+    mrr_after: {type: integer, description: Monthly recurring revenue after the change, minor units}
+    mrr_delta: {type: integer, description: Signed change in monthly recurring revenue, minor units}
+    currency: {type: string, format: iso_4217}
+
+events:
+
+  # Acquisition
+
+  - name: page_viewed
+    category: acquisition
+    description: A marketing or app page was viewed.
+    trigger: Page load or client-side route change.
+    source: client
+    properties:
+      page_path: {type: string, required: true}
+      page_title: {type: string, required: false}
+      referrer: {type: string, required: false}
+      utm_source: {type: string, required: false}
+      utm_medium: {type: string, required: false}
+      utm_campaign: {type: string, required: false}
+      utm_content: {type: string, required: false}
+      utm_term: {type: string, required: false}
+    lifecycle_transition: null
+
+  - name: demo_requested
+    category: acquisition
+    description: A visitor submitted the demo or contact sales form.
+    trigger: Form submission accepted by the backend.
+    source: server
+    properties:
+      form_id: {type: string, required: true}
+      company_size_band: {type: string, enum: ["1-10", "11-50", "51-200", "201-1000", "1000+"], required: true}
+      country_code: {type: string, format: iso_3166_alpha2, required: false}
+      first_touch_utm_source: {type: string, required: false}
+      first_touch_utm_campaign: {type: string, required: false}
+    lifecycle_transition: {from: [visitor], to: lead}
+
+  - name: content_downloaded
+    category: acquisition
+    description: A visitor exchanged contact details for a gated resource.
+    trigger: Gated form submission accepted by the backend.
+    source: server
+    properties:
+      content_id: {type: string, required: true}
+      content_type: {type: string, enum: [guide, report, template, webinar], required: true}
+    lifecycle_transition: {from: [visitor], to: lead}
+
+  # Signup
+
+  - name: user_signed_up
+    category: signup
+    description: A new user account was created.
+    trigger: User row committed to the database.
+    source: server
+    properties:
+      signup_method: {type: string, enum: [email, google, microsoft, sso, invite], required: true}
+      is_invited: {type: boolean, required: true}
+      email_domain_type: {type: string, enum: [work, personal], required: true}
+      first_touch_utm_source: {type: string, required: false}
+      first_touch_utm_medium: {type: string, required: false}
+      first_touch_utm_campaign: {type: string, required: false}
+      landing_page_path: {type: string, required: false}
+    lifecycle_transition: {from: [visitor, lead], to: lead}
+
+  - name: email_verified
+    category: signup
+    description: The user confirmed ownership of their email address.
+    trigger: Verification token accepted.
+    source: server
+    properties:
+      minutes_since_signup: {type: integer, required: true}
+    lifecycle_transition: null
+
+  - name: workspace_created
+    category: signup
+    description: A new account or workspace was created.
+    trigger: Account row committed to the database.
+    source: server
+    properties:
+      workspace_role: {type: string, enum: [owner], required: true}
+      use_case: {type: string, required: false, description: Selected from a fixed onboarding list}
+      team_size_band: {type: string, enum: ["1", "2-10", "11-50", "51+"], required: false}
+    lifecycle_transition: null
+
+  - name: trial_started
+    category: signup
+    description: A time-limited trial of a paid plan began for the account.
+    trigger: Trial subscription created in billing or entitlement granted.
+    source: server
+    properties:
+      plan_id: {type: string, required: true}
+      trial_length_days: {type: integer, required: true}
+      trial_ends_at: {type: string, format: date-time, required: true}
+      payment_method_collected: {type: boolean, required: true}
+    lifecycle_transition: {from: [lead, marketing_qualified, product_qualified, sales_accepted, opportunity], to: trialing}
+
+  # Activation
+
+  - name: teammate_invited
+    category: activation
+    description: A user invited another person to the account.
+    trigger: Invitation record created.
+    source: server
+    properties:
+      invite_role: {type: string, enum: [admin, member, viewer], required: true}
+      invites_sent_total: {type: integer, required: true}
+    lifecycle_transition: null
+
+  - name: invitation_accepted
+    category: activation
+    description: An invited person joined the account.
+    trigger: Membership created from an invitation.
+    source: server
+    properties:
+      inviter_user_id: {type: string, required: true}
+      hours_to_accept: {type: integer, required: true}
+      active_members_total: {type: integer, required: true}
+    lifecycle_transition: null
+
+  - name: integration_connected
+    category: activation
+    description: The account connected a third-party integration.
+    trigger: Credentials stored and first successful sync or health check.
+    source: server
+    properties:
+      integration_key: {type: string, required: true}
+      integrations_connected_total: {type: integer, required: true}
+    lifecycle_transition: null
+
+  - name: first_value_reached
+    category: activation
+    description: The account completed the defined activation milestone for the first time.
+    trigger: Activation rule evaluated true for the first time for this account.
+    source: server
+    properties:
+      activation_rule_version: {type: integer, required: true}
+      hours_since_signup: {type: integer, required: true}
+      milestones_completed: {type: array, items: string, required: true}
+    lifecycle_transition: {from: [lead, trialing, customer_onboarding], to_by_context: {lead: product_qualified, trialing: product_qualified, customer_onboarding: customer_active}}
+
+  # Core usage
+
+  - name: project_created
+    category: core_usage
+    description: A user created a project, the primary object of the product.
+    trigger: Project row committed.
+    source: server
+    properties:
+      project_id: {type: string, required: true}
+      template_id: {type: string, required: false}
+      projects_total: {type: integer, required: true}
+    lifecycle_transition: null
+
+  - name: report_exported
+    category: core_usage
+    description: A user exported a report, a key value-delivery action.
+    trigger: Export job completed successfully.
+    source: server
+    properties:
+      report_id: {type: string, required: true}
+      export_format: {type: string, enum: [pdf, csv, xlsx], required: true}
+    lifecycle_transition: null
+
+  - name: feature_used
+    category: core_usage
+    description: A user used a tracked feature that has no dedicated event.
+    trigger: Feature action committed on the server.
+    source: server
+    properties:
+      feature_key: {type: string, required: true}
+      plan_gated: {type: boolean, required: true}
+    lifecycle_transition: null
+
+  - name: usage_limit_reached
+    category: core_usage
+    description: The account hit a plan limit (seats, projects, usage units).
+    trigger: Entitlement check denied an action because a limit was reached.
+    source: server
+    properties:
+      limit_key: {type: string, required: true}
+      limit_value: {type: integer, required: true}
+      plan_id: {type: string, required: true}
+    lifecycle_transition: null
+
+  - name: paywall_viewed
+    category: core_usage
+    description: An upgrade prompt or paywall was shown to the user.
+    trigger: Upgrade prompt rendered.
+    source: client
+    properties:
+      paywall_id: {type: string, required: true}
+      feature_key: {type: string, required: false}
+      current_plan_id: {type: string, required: true}
+    lifecycle_transition: null
+
+  # Billing
+
+  - name: checkout_started
+    category: billing
+    description: A user opened checkout for a paid plan.
+    trigger: Checkout session created on the server.
+    source: server
+    properties:
+      plan_id: {type: string, required: true}
+      billing_interval: {type: string, enum: [month, year], required: true}
+      seats: {type: integer, required: true}
+      entry_point: {type: string, required: true, description: Paywall, pricing page, settings, or sales link}
+    lifecycle_transition: null
+
+  - name: subscription_created
+    category: billing
+    description: A paid subscription was created for the account.
+    trigger: Verified subscription created webhook processed.
+    source: webhook
+    properties:
+      includes: revenue_properties
+      seats: {type: integer, required: true}
+      coupon_id: {type: string, required: false}
+      sales_assisted: {type: boolean, required: true}
+    lifecycle_transition: null
+
+  - name: invoice_paid
+    category: billing
+    description: An invoice was paid successfully.
+    trigger: Verified invoice paid webhook processed.
+    source: webhook
+    properties:
+      includes: revenue_properties
+      invoice_id: {type: string, required: true}
+      amount_paid: {type: integer, required: true}
+      is_first_payment: {type: boolean, required: true}
+    lifecycle_transition: {when: is_first_payment and amount_paid > 0, from: [trialing, opportunity, lead, product_qualified, sales_accepted], to: customer_onboarding}
+
+  - name: payment_failed
+    category: billing
+    description: A charge attempt failed.
+    trigger: Verified invoice payment failed webhook processed.
+    source: webhook
+    properties:
+      includes: revenue_properties
+      invoice_id: {type: string, required: true}
+      attempt_count: {type: integer, required: true}
+      failure_code: {type: string, required: true}
+      next_retry_at: {type: string, format: date-time, required: false}
+    lifecycle_transition: {from: [customer_onboarding, customer_active, expanded], to: at_risk}
+
+  - name: payment_recovered
+    category: billing
+    description: A previously failed invoice was paid.
+    trigger: Verified invoice paid webhook for an invoice with prior failures.
+    source: webhook
+    properties:
+      includes: revenue_properties
+      invoice_id: {type: string, required: true}
+      days_past_due: {type: integer, required: true}
+      recovery_channel: {type: string, enum: [automatic_retry, customer_update, sales_assist], required: true}
+    lifecycle_transition: {from: [at_risk], to: customer_active}
+
+  # Subscription changes
+
+  - name: subscription_upgraded
+    category: subscription_change
+    description: The account moved to a higher-priced plan.
+    trigger: Verified subscription updated webhook with a higher plan price.
+    source: webhook
+    properties:
+      includes: revenue_properties
+      previous_plan_id: {type: string, required: true}
+      upgrade_trigger: {type: string, enum: [self_serve, sales_assisted, limit_reached], required: true}
+    lifecycle_transition: {from: [customer_onboarding, customer_active], to: expanded}
+
+  - name: subscription_downgraded
+    category: subscription_change
+    description: The account moved to a lower-priced plan.
+    trigger: Verified subscription updated webhook with a lower plan price, effective date reached.
+    source: webhook
+    properties:
+      includes: revenue_properties
+      previous_plan_id: {type: string, required: true}
+      downgrade_reason: {type: string, enum: [price, missing_value, team_shrank, budget_cut, other], required: false}
+    lifecycle_transition: null
+
+  - name: seat_count_changed
+    category: subscription_change
+    description: The number of billed seats changed.
+    trigger: Verified subscription updated webhook with a new quantity.
+    source: webhook
+    properties:
+      includes: revenue_properties
+      previous_seats: {type: integer, required: true}
+      seats: {type: integer, required: true}
+    lifecycle_transition: {when: seats > previous_seats, from: [customer_onboarding, customer_active], to: expanded}
+
+  - name: billing_interval_changed
+    category: subscription_change
+    description: The account switched between monthly and annual billing.
+    trigger: Verified subscription updated webhook with a new interval.
+    source: webhook
+    properties:
+      includes: revenue_properties
+      previous_billing_interval: {type: string, enum: [month, year], required: true}
+    lifecycle_transition: null
+
+  # Support
+
+  - name: ticket_created
+    category: support
+    description: A support ticket was opened for the account.
+    trigger: Verified support tool webhook processed.
+    source: webhook
+    properties:
+      ticket_id: {type: string, required: true}
+      channel: {type: string, enum: [email, chat, in_app, phone], required: true}
+      priority: {type: string, enum: [low, normal, high, urgent], required: true}
+      topic: {type: string, enum: [billing, bug, how_to, feature_request, account_access, other], required: true}
+    lifecycle_transition: null
+
+  - name: ticket_resolved
+    category: support
+    description: A support ticket was resolved.
+    trigger: Verified support tool webhook with resolved status.
+    source: webhook
+    properties:
+      ticket_id: {type: string, required: true}
+      hours_to_first_response: {type: number, required: true}
+      hours_to_resolution: {type: number, required: true}
+      satisfaction_score: {type: integer, minimum: 1, maximum: 5, required: false}
+    lifecycle_transition: null
+
+  - name: health_score_changed
+    category: support
+    description: The computed account health band changed.
+    trigger: Scheduled health scoring job produced a different band.
+    source: server
+    properties:
+      previous_band: {type: string, enum: [healthy, neutral, at_risk], required: true}
+      band: {type: string, enum: [healthy, neutral, at_risk], required: true}
+      score_model_version: {type: integer, required: true}
+      top_factors: {type: array, items: string, required: true}
+    lifecycle_transition: {when: band == at_risk, from: [customer_onboarding, customer_active, expanded], to: at_risk}
+
+  # Cancellation
+
+  - name: cancellation_requested
+    category: cancellation
+    description: A user started or confirmed cancellation in the product.
+    trigger: Cancellation flow submitted, before the subscription ends.
+    source: server
+    properties:
+      includes: revenue_properties
+      cancel_reason: {type: string, enum: [too_expensive, missing_feature, not_using, switched_competitor, business_closed, other], required: true}
+      save_offer_shown: {type: string, required: false}
+      save_offer_accepted: {type: boolean, required: true}
+      effective_at: {type: string, format: date-time, required: true}
+    lifecycle_transition: {when: not save_offer_accepted, from: [customer_onboarding, customer_active, expanded], to: at_risk}
+
+  - name: subscription_canceled
+    category: cancellation
+    description: The paid subscription ended and access to paid features stopped.
+    trigger: Verified subscription deleted webhook processed.
+    source: webhook
+    properties:
+      includes: revenue_properties
+      cancellation_type: {type: string, enum: [voluntary, involuntary], required: true}
+      tenure_months: {type: integer, required: true}
+    lifecycle_transition: {from: [customer_onboarding, customer_active, expanded, at_risk], to: churned}
+
+  - name: subscription_reactivated
+    category: cancellation
+    description: A previously churned account started a new paid subscription.
+    trigger: Verified subscription created webhook for an account with a prior churn.
+    source: webhook
+    properties:
+      includes: revenue_properties
+      months_since_churn: {type: integer, required: true}
+    lifecycle_transition: {from: [churned], to: reactivated}
+
+  # Lifecycle bookkeeping
+
+  - name: lifecycle_stage_changed
+    category: lifecycle
+    description: The account moved between lifecycle stages. Emitted once per transition by the stage service.
+    trigger: Stage service committed a new stage for the account.
+    source: server
+    properties:
+      from_stage: {type: string, required: false}
+      to_stage: {type: string, required: true}
+      reason_event: {type: string, required: true, description: Name of the event that caused the transition}
+      reason_event_id: {type: string, required: true}
+    lifecycle_transition: null

@@ -1,0 +1,416 @@
+# metrics-dictionary.yaml
+# Machine-readable SaaS metric definitions. Dashboards and queries reference metric ids.
+# Amounts are in the single reporting currency. Grain describes the level at which the
+# metric is computed before any aggregation. Formulas are pseudo-SQL/plain math.
+# Change a definition only with a new entry in `changelog` and an effective date.
+
+version: 1
+changelog:
+  - version: 1
+    effective_date: "2026-01-01"
+    note: Initial dictionary.
+
+metrics:
+  - id: mrr
+    name: Monthly recurring revenue
+    definition: Normalized monthly value of active recurring subscription items at a month-end snapshot, after recurring discounts, excluding trials, one-off fees, services, tax and uncommitted usage.
+    formula: "sum((unit_amount * quantity - recurring_discount) / interval_months) over active recurring items at snapshot"
+    unit: currency
+    grain: account per month
+    source_tables: [subscription_items, subscriptions, accounts, v_account_mrr_monthly]
+    owner: Finance
+    pitfalls:
+      - Computing from invoices or cash receipts.
+      - Including setup fees, services or tax.
+      - Keeping accounts in dunning as MRR indefinitely.
+
+  - id: arr
+    name: Annual recurring revenue
+    definition: Annualized run-rate of live recurring revenue.
+    formula: "mrr * 12"
+    unit: currency
+    grain: company per month
+    source_tables: [v_account_mrr_monthly]
+    owner: Finance
+    pitfalls:
+      - Annualizing a peak usage month.
+      - Including signed contracts not yet live (use committed_arr).
+
+  - id: committed_arr
+    name: Committed ARR
+    definition: Live ARR plus signed contracts not yet started, minus ARR from customers that have notified non-renewal.
+    formula: "live_arr + signed_not_started_arr - notified_churn_arr"
+    unit: currency
+    grain: company per month
+    source_tables: [v_account_mrr_monthly, subscriptions]
+    owner: Finance
+    pitfalls:
+      - Including pipeline or verbal commitments.
+      - Reporting it without also reporting live ARR.
+
+  - id: contracted_arr
+    name: Contracted ARR
+    definition: ARR under signed contracts regardless of go-live status. State whether known non-renewals are subtracted.
+    formula: "sum(annualized recurring value of signed, unexpired contracts)"
+    unit: currency
+    grain: company per month
+    source_tables: [subscriptions, subscription_items]
+    owner: Finance
+    pitfalls:
+      - Used interchangeably with committed_arr without saying which.
+
+  - id: new_mrr
+    name: New MRR
+    definition: MRR from accounts whose first paid month is the current month.
+    formula: "sum(mrr_m) where mrr_m-1 = 0 and month = first_mrr_month"
+    unit: currency
+    grain: account per month
+    source_tables: [v_account_mrr_monthly]
+    owner: RevOps
+    pitfalls:
+      - Counting reactivations or price increases as new.
+
+  - id: expansion_mrr
+    name: Expansion MRR
+    definition: Increase in MRR for accounts that had MRR in the prior month.
+    formula: "sum(mrr_m - mrr_m-1) where mrr_m > mrr_m-1 > 0"
+    unit: currency
+    grain: account per month
+    source_tables: [v_account_mrr_monthly]
+    owner: Account management
+    pitfalls:
+      - Netting expansion against contraction across accounts.
+
+  - id: contraction_mrr
+    name: Contraction MRR
+    definition: Decrease in MRR for accounts that remain paying. Reported as a negative number.
+    formula: "sum(mrr_m - mrr_m-1) where 0 < mrr_m < mrr_m-1"
+    unit: currency
+    grain: account per month
+    source_tables: [v_account_mrr_monthly]
+    owner: Customer success
+    pitfalls:
+      - Hiding downgrades inside net expansion.
+
+  - id: churned_mrr
+    name: Churned MRR
+    definition: Prior-month MRR of accounts that have zero MRR at month end. Reported as a negative number.
+    formula: "-sum(mrr_m-1) where mrr_m-1 > 0 and mrr_m = 0"
+    unit: currency
+    grain: account per month
+    source_tables: [v_account_mrr_monthly]
+    owner: Customer success
+    pitfalls:
+      - Recognizing churn at cancel click instead of end of service.
+      - Reclassifying churn plus new as a plan migration.
+
+  - id: reactivation_mrr
+    name: Reactivation MRR
+    definition: MRR from accounts that previously paid, had zero MRR in the prior month, and pay again.
+    formula: "sum(mrr_m) where mrr_m-1 = 0 and mrr_m > 0 and month > first_mrr_month"
+    unit: currency
+    grain: account per month
+    source_tables: [v_account_mrr_monthly]
+    owner: RevOps
+    pitfalls:
+      - Counting reactivated accounts as new customers in CAC.
+
+  - id: net_new_mrr
+    name: Net new MRR
+    definition: Change in total MRR over the month; equals the sum of all movements.
+    formula: "new + reactivation + expansion + contraction + churn"
+    unit: currency
+    grain: company per month
+    source_tables: [v_account_mrr_monthly]
+    owner: RevOps
+    pitfalls:
+      - Not reconciling opening plus movements to closing MRR.
+
+  - id: bookings
+    name: Bookings
+    definition: Contract value signed in the period. State whether first-year or total contract value.
+    formula: "sum(contract value) where signed_at in period"
+    unit: currency
+    grain: contract per period
+    source_tables: [subscriptions]
+    owner: Sales operations
+    pitfalls:
+      - Presented as revenue or ARR.
+
+  - id: billings
+    name: Billings
+    definition: Amount invoiced in the period, excluding tax.
+    formula: "sum(recurring_amount + one_time_amount) where issued_at in period and status <> 'void'"
+    unit: currency
+    grain: invoice per period
+    source_tables: [invoices]
+    owner: Finance
+    pitfalls:
+      - Annual prepay creates spikes that are not growth.
+
+  - id: revenue
+    name: Recognized revenue
+    definition: Revenue earned as service is delivered under applicable accounting rules; sourced from the general ledger.
+    formula: "sum(recognized revenue) in period"
+    unit: currency
+    grain: company per month
+    source_tables: [general_ledger]
+    owner: Finance
+    pitfalls:
+      - Substituting billings or MRR for recognized revenue.
+
+  - id: logo_churn_rate
+    name: Logo churn rate
+    definition: Share of paying accounts at start of month that have zero MRR at month end.
+    formula: "churned_accounts_m / paying_accounts_at_start_m"
+    unit: percent
+    grain: company per month
+    source_tables: [v_account_mrr_monthly]
+    owner: Customer success
+    pitfalls:
+      - Including accounts acquired during the month in the denominator.
+
+  - id: grr
+    name: Gross revenue retention
+    definition: Share of MRR retained from the cohort paying 12 months ago, counting churn and contraction and excluding expansion.
+    formula: "sum(least(mrr_i_m, mrr_i_m-12)) / sum(mrr_i_m-12) over accounts with mrr_i_m-12 > 0"
+    unit: percent
+    grain: cohort per month (trailing 12 months)
+    source_tables: [v_account_mrr_monthly]
+    owner: Customer success
+    pitfalls:
+      - Excluding downgrades.
+      - Reporting a point-in-time rate without saying so.
+
+  - id: nrr
+    name: Net revenue retention
+    definition: Current MRR of the cohort paying 12 months ago divided by its MRR 12 months ago, including expansion, contraction and churn.
+    formula: "sum(mrr_i_m) / sum(mrr_i_m-12) over accounts with mrr_i_m-12 > 0"
+    unit: percent
+    grain: cohort per month (trailing 12 months)
+    source_tables: [v_account_mrr_monthly]
+    owner: CEO
+    pitfalls:
+      - Cherry-picking cohorts or segments.
+      - Reporting without GRR.
+      - Including new logos acquired after the cohort date.
+
+  - id: arpa
+    name: Average revenue per account
+    definition: MRR divided by paying accounts.
+    formula: "mrr / paying_accounts"
+    unit: currency
+    grain: company or segment per month
+    source_tables: [v_account_mrr_monthly]
+    owner: Finance
+    pitfalls:
+      - Blending segments with very different price points.
+
+  - id: arpu
+    name: Average revenue per user
+    definition: MRR divided by paying users or seats; state which.
+    formula: "mrr / paying_users"
+    unit: currency
+    grain: company or segment per month
+    source_tables: [v_account_mrr_monthly, users, subscription_items]
+    owner: Finance
+    pitfalls:
+      - Mixing total users with paid seats.
+
+  - id: acv
+    name: Annual contract value
+    definition: Annualized recurring value of a new contract, excluding one-off fees.
+    formula: "recurring contract value / contract_years"
+    unit: currency
+    grain: contract
+    source_tables: [subscription_items, subscriptions]
+    owner: Sales operations
+    pitfalls:
+      - Including setup and services.
+      - Reporting only the mean; report the median too.
+
+  - id: gross_margin
+    name: Gross margin
+    definition: Revenue minus cost of revenue (hosting, embedded third-party software, support, onboarding, payment fees), divided by revenue.
+    formula: "(revenue - cost_of_revenue) / revenue"
+    unit: percent
+    grain: company per quarter
+    source_tables: [general_ledger]
+    owner: Finance
+    pitfalls:
+      - Excluding support or onboarding costs.
+
+  - id: cac_blended
+    name: Blended fully loaded CAC
+    definition: All sales and marketing cost divided by new customers, over the same (optionally lagged) period.
+    formula: "sum(acquisition_spend) / new_customers"
+    unit: currency
+    grain: company or segment per month or quarter
+    source_tables: [acquisition_spend, v_account_mrr_monthly]
+    owner: Finance
+    pitfalls:
+      - Excluding salaries, commissions or tools.
+      - Counting reactivations as new customers.
+      - Ignoring the lag between spend and close.
+
+  - id: cac_paid
+    name: Paid CAC
+    definition: Paid media spend divided by new customers attributed to paid channels.
+    formula: "sum(spend where cost_category = 'paid_media') / new_customers where acquisition_type = 'paid'"
+    unit: currency
+    grain: channel per month
+    source_tables: [acquisition_spend, accounts, v_account_mrr_monthly]
+    owner: Marketing
+    pitfalls:
+      - Presented as company CAC.
+
+  - id: ltv
+    name: Customer lifetime value
+    definition: Expected gross profit per account, margin adjusted and capped at a horizon.
+    formula: "arpa * gross_margin * least(1 / monthly_gross_revenue_churn, horizon_months), where monthly_gross_revenue_churn = (churned_mrr + contraction_mrr) / opening_mrr"
+    unit: currency
+    grain: segment per month
+    source_tables: [v_account_mrr_monthly]
+    owner: Finance
+    pitfalls:
+      - Omitting gross margin.
+      - Uncapped lifetimes from low early churn.
+      - Using net revenue churn, which is undefined when NRR exceeds 100 percent; use gross revenue churn and validate against observed cohort gross profit.
+
+  - id: cac_payback_months
+    name: CAC payback
+    definition: Months of gross profit from a new customer needed to recover CAC.
+    formula: "cac / (new_customer_arpa * gross_margin)"
+    unit: months
+    grain: segment or cohort per month
+    source_tables: [acquisition_spend, v_account_mrr_monthly]
+    owner: Finance
+    pitfalls:
+      - Omitting gross margin.
+      - Using blended ARPA instead of new-customer ARPA.
+
+  - id: ltv_to_cac
+    name: LTV to CAC ratio
+    definition: Margin-adjusted, capped LTV divided by fully loaded CAC.
+    formula: "ltv / cac_blended"
+    unit: ratio
+    grain: segment per month
+    source_tables: [acquisition_spend, v_account_mrr_monthly]
+    owner: Finance
+    pitfalls:
+      - Pairing uncapped LTV with paid CAC.
+
+  - id: magic_number
+    name: Magic Number
+    definition: Net new ARR in a quarter divided by prior-quarter sales and marketing expense.
+    formula: "(arr_q - arr_q-1) / sm_expense_q-1"
+    unit: ratio
+    grain: company per quarter
+    source_tables: [v_account_mrr_monthly, acquisition_spend]
+    owner: CFO
+    pitfalls:
+      - Using a revenue-based variant without saying so.
+      - Seasonality distorting single quarters.
+
+  - id: burn_multiple
+    name: Burn Multiple
+    definition: Net cash burn divided by net new ARR over the same period.
+    formula: "net_burn / net_new_arr"
+    unit: ratio
+    grain: company per quarter or trailing 12 months
+    source_tables: [general_ledger, v_account_mrr_monthly]
+    owner: CFO
+    pitfalls:
+      - Reporting a number when net new ARR is zero or negative (not meaningful).
+
+  - id: rule_of_40
+    name: Rule of 40
+    definition: Revenue growth rate plus profit margin, in percentage points. State whether free cash flow or EBITDA margin is used.
+    formula: "revenue_growth_pct + profit_margin_pct"
+    unit: percentage points
+    grain: company per trailing 12 months
+    source_tables: [general_ledger]
+    owner: CFO
+    pitfalls:
+      - Switching the profit measure between periods.
+
+  - id: pipeline_coverage
+    name: Pipeline coverage
+    definition: Stage-qualified open pipeline due to close in the period divided by remaining target.
+    formula: "qualified_open_pipeline_amount / (target - closed_won_to_date)"
+    unit: ratio
+    grain: team per period
+    source_tables: [crm_opportunities]
+    owner: Sales
+    pitfalls:
+      - Counting unqualified or stale opportunities.
+
+  - id: win_rate
+    name: Win rate
+    definition: Closed won divided by decided opportunities (won plus lost, including no decision) for an opportunity creation cohort.
+    formula: "closed_won / (closed_won + closed_lost)"
+    unit: percent
+    grain: creation cohort per month or quarter
+    source_tables: [crm_opportunities, lifecycle_stage_transitions]
+    owner: Sales
+    pitfalls:
+      - Excluding no-decision losses from the denominator.
+      - Switching between cohort and close-period basis.
+
+  - id: sales_cycle_days
+    name: Sales cycle
+    definition: Median days from opportunity creation to closed won.
+    formula: "median(closed_won_at - opportunity_created_at)"
+    unit: days
+    grain: closed-won cohort per quarter
+    source_tables: [lifecycle_stage_transitions]
+    owner: Sales
+    pitfalls:
+      - Using the mean.
+
+  - id: stage_conversion_rate
+    name: Stage conversion rate
+    definition: Share of entities entering a stage in a cohort that reach any later stage within a fixed window.
+    formula: "count(entered A in P and reached later stage within W) / count(entered A in P)"
+    unit: percent
+    grain: stage per entry cohort
+    source_tables: [lifecycle_stage_transitions]
+    owner: RevOps
+    pitfalls:
+      - Dividing same-period counts.
+      - Reporting immature cohorts.
+
+  - id: time_in_stage_days
+    name: Time in stage
+    definition: Median and 90th percentile days between entering a stage and the next transition.
+    formula: "percentile_cont(0.5) of (next_transition_at - transitioned_at)"
+    unit: days
+    grain: stage per entry cohort
+    source_tables: [lifecycle_stage_transitions]
+    owner: RevOps
+    pitfalls:
+      - Ignoring entries still open (survivor bias).
+
+  - id: activation_rate
+    name: Activation rate
+    definition: Share of a signup cohort that meets the activation rule within N days.
+    formula: "count(activated within N days) / count(signups in cohort)"
+    unit: percent
+    grain: signup cohort
+    source_tables: [events, lifecycle_stage_transitions]
+    owner: Product
+    pitfalls:
+      - An activation rule not validated against retention.
+      - Changing the rule without versioning.
+
+  - id: dau_mau
+    name: DAU/MAU
+    definition: Average daily active users in a month divided by monthly active users, where active means a value-bearing action.
+    formula: "avg(daily_active_users) / monthly_active_users"
+    unit: percent
+    grain: company or segment per month
+    source_tables: [events, users]
+    owner: Product
+    pitfalls:
+      - Counting logins or page loads as activity.
+      - Applying it to weekly-use products (use WAU/MAU).

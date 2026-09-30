@@ -1,0 +1,55 @@
+name: Content request
+description: Propose new guidance, a new audit check, a template, or a query.
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Content must follow the authoring guide (docs/AUTHORING.md), including the originality rules: general, publicly known SaaS practice only, no reuse of any book, course, or consultancy material.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Customer lifecycle
+        - Metrics
+        - Pricing and packaging
+        - Go-to-market motions
+        - Demand and acquisition
+        - Sales process
+        - Onboarding and activation
+        - Retention and expansion
+        - Data and instrumentation
+        - Revenue operations
+        - Growth stages
+        - Continuous improvement
+        - Templates or SQL
+        - SKILL.md, AUDIT.md, or IMPLEMENT.md
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should be added or changed, and what a practitioner would do differently because of it.
+    validations:
+      required: true
+  - type: textarea
+    id: audit
+    attributes:
+      label: Audit check (optional)
+      description: If this adds an audit check, describe the check, the evidence to look for, and the proposed severity.
+  - type: textarea
+    id: sources
+    attributes:
+      label: Public references (optional)
+      description: Widely published sources that support any benchmark or claim.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: The proposal is original and does not depend on a proprietary methodology.
+          required: true

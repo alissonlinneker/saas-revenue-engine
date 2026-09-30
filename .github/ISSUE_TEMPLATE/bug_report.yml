@@ -1,0 +1,41 @@
+name: Bug report
+description: Report incorrect guidance, a broken link, a wrong formula, a failing query, or a validator problem.
+title: "fix: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. For security issues, use private vulnerability reporting from the Security tab instead of this form.
+  - type: input
+    id: location
+    attributes:
+      label: File and section
+      description: Path and heading or line, for example skills/saas-revenue-engine/references/02-metrics.md, "Net revenue retention".
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong
+      description: Describe the error and why it is wrong. Include a source for any factual correction when possible.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected content or behavior
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Agent host and prompt (optional)
+      description: If the problem appeared while using the skill, share the host (Claude Code, Codex, and so on) and the prompt.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true

@@ -1,0 +1,151 @@
+# Glossary
+
+> Scope: alphabetical definitions of the significant terms used across the reference files. Load when: a term in another reference is unclear or two teams use the same word differently.
+
+- **Account**: the paying organization or workspace; the grain for revenue, contracts, churn, and expansion. See [01-customer-lifecycle](01-customer-lifecycle.md).
+- **Account executive**: the seller who owns an opportunity from qualification to signature. See [04-go-to-market-motions](04-go-to-market-motions.md).
+- **Account management**: the role that owns commercial growth (renewal and expansion) of existing accounts, often alongside customer success. See [08-retention-and-expansion](08-retention-and-expansion.md).
+- **Activation**: a behavioral threshold reached within a defined window that predicts retention. See [07-onboarding-and-activation](07-onboarding-and-activation.md).
+- **Activation rate**: share of a signup cohort that reaches the activation threshold within the window, reported only for cohorts older than the window. See [07-onboarding-and-activation](07-onboarding-and-activation.md).
+- **Activation to retention lift**: retention of activated accounts minus retention of non-activated accounts in the same cohort and horizon. See [07-onboarding-and-activation](07-onboarding-and-activation.md).
+- **ACV (annual contract value)**: annualized recurring contract value per new contract, excluding one-off fees. See [02-metrics](02-metrics.md).
+- **Add-on**: a separately priced capability bought by a minority of customers (under roughly a third). See [03-pricing-and-packaging](03-pricing-and-packaging.md).
+- **Aha moment**: the point where a customer first understands the core value; used to discover the activation metric. See [07-onboarding-and-activation](07-onboarding-and-activation.md).
+- **Allowed transitions map**: a config of legal from-stage to to-stage pairs used to reject or flag illegal lifecycle moves. See [01-customer-lifecycle](01-customer-lifecycle.md).
+- **ARPA (average revenue per account)**: MRR divided by paying accounts. See [02-metrics](02-metrics.md).
+- **ARPU (average revenue per user)**: MRR divided by paying users or seats; state which. See [02-metrics](02-metrics.md).
+- **ARR (annual recurring revenue)**: MRR multiplied by 12. See [02-metrics](02-metrics.md).
+- **ARR movement table**: one row per account per month with starting ARR, new, expansion, contraction, churn, and ending ARR. See [11-growth-stages](11-growth-stages.md).
+- **At risk**: a stage for customers whose health is below threshold or whose payment failure is unresolved. See [10-revenue-operations](10-revenue-operations.md).
+- **Attainment distribution**: share of ramped reps at or above quota, in bands. See [10-revenue-operations](10-revenue-operations.md).
+- **Attribution**: assigning credit for a conversion to channels or touches; directional evidence, not truth. See [05-demand-and-acquisition](05-demand-and-acquisition.md).
+- **Backfill**: loading historical data from the system of record, labeled and never pushed to live action tools. See [09-data-and-instrumentation](09-data-and-instrumentation.md).
+- **BANT**: a public qualification framework checking budget, authority, need, and timeline; suited to smaller deals. See [06-sales-process](06-sales-process.md).
+- **Billings**: the amount invoiced in a period, by invoice date. See [02-metrics](02-metrics.md).
+- **Blameless review**: a process review after a miss that finds system causes and assigns system-level actions, not individual blame. See [10-revenue-operations](10-revenue-operations.md).
+- **Bookings**: the value of contracts signed in a period, by signature date. See [02-metrics](02-metrics.md).
+- **Burn Multiple**: net burn divided by net new ARR; not meaningful when net new ARR is zero or negative. See [02-metrics](02-metrics.md).
+- **Business review**: a periodic meeting showing outcomes delivered against targets agreed at sale and onboarding. See [08-retention-and-expansion](08-retention-and-expansion.md).
+- **Buying committee**: the set of people who use, pay for, approve, or can block a purchase. See [06-sales-process](06-sales-process.md).
+- **CAC (customer acquisition cost)**: sales and marketing cost divided by new customers; blended, paid, or fully loaded variants must be labeled. See [02-metrics](02-metrics.md).
+- **CAC payback**: CAC divided by new ARPA times gross margin, in months. See [02-metrics](02-metrics.md).
+- **CAGR (compound annual growth rate)**: the constant annual rate linking start and end values over n years. See [11-growth-stages](11-growth-stages.md).
+- **Cancellation flow**: a clear self-serve path to cancel that captures a reason and offers a relevant alternative. See [08-retention-and-expansion](08-retention-and-expansion.md).
+- **Capacity planning**: deriving hiring and pipeline targets from quota, ramp, attainment, win rate, and attrition. See [10-revenue-operations](10-revenue-operations.md).
+- **Card updater**: a payment processor service that refreshes expired or reissued card details automatically. See [08-retention-and-expansion](08-retention-and-expansion.md).
+- **CARR (committed ARR)**: live ARR plus signed-not-started ARR minus notified churn ARR. See [02-metrics](02-metrics.md).
+- **Champion**: a buyer-side person with influence who actively sells internally; distinct from a fan or coach. See [06-sales-process](06-sales-process.md).
+- **Change control**: the written, reviewed, versioned process for changing a metric or stage definition. See [10-revenue-operations](10-revenue-operations.md).
+- **Churn**: loss of an account's recurring revenue, recognized at the effective end of service. See [08-retention-and-expansion](08-retention-and-expansion.md).
+- **CMGR (compound monthly growth rate)**: the constant monthly rate linking start and end values over n months. See [11-growth-stages](11-growth-stages.md).
+- **Cohort**: a population fixed by a shared entry period (signup, start, stage entry) and followed over time. See [01-customer-lifecycle](01-customer-lifecycle.md).
+- **Consent ledger**: an append-only record of who consented to what purpose, when, how, and any withdrawal. See [05-demand-and-acquisition](05-demand-and-acquisition.md).
+- **Contraction**: a decrease in an account's MRR while it stays above zero. See [02-metrics](02-metrics.md).
+- **Conversion levers**: improvements that move more of existing volume forward, such as onboarding or qualification changes. See [12-continuous-improvement](12-continuous-improvement.md).
+- **Cost to serve**: support, success, account management, and infrastructure cost per active account. See [04-go-to-market-motions](04-go-to-market-motions.md).
+- **Coverage model**: how customer success capacity is assigned by segment: digital or pooled, assigned portfolio, or dedicated. See [08-retention-and-expansion](08-retention-and-expansion.md).
+- **CRM sync**: movement of fields between product, warehouse, and CRM with explicit field ownership. See [09-data-and-instrumentation](09-data-and-instrumentation.md).
+- **Customer**: the lifecycle stage for an account with a paid, active subscription or signed contract in force. See [01-customer-lifecycle](01-customer-lifecycle.md).
+- **Customer success**: the function responsible for adoption, outcomes, and retention of existing accounts. See [08-retention-and-expansion](08-retention-and-expansion.md).
+- **DAU/MAU**: average daily active users divided by monthly active users; a stickiness ratio. See [02-metrics](02-metrics.md).
+- **Deadline driver**: an external date that forces a buying decision, such as contract expiry or a regulatory date. See [06-sales-process](06-sales-process.md).
+- **Deal desk**: the function that approves non-standard pricing and terms under published rules. See [06-sales-process](06-sales-process.md).
+- **Definitions and process forum**: a monthly cross-functional meeting that approves metric definition changes and fixes handoff issues. See [10-revenue-operations](10-revenue-operations.md).
+- **Discount rate**: one minus contracted price divided by list price. See [03-pricing-and-packaging](03-pricing-and-packaging.md).
+- **Discovery**: the structured conversation that captures current state, problem, outcome, urgency, decision process, and stakeholders. See [06-sales-process](06-sales-process.md).
+- **Dunning**: the sequence of retries, notices, grace period, and restriction after a failed payment. See [03-pricing-and-packaging](03-pricing-and-packaging.md).
+- **Dunning recovery rate**: failed invoice amount recovered divided by failed invoice amount. See [03-pricing-and-packaging](03-pricing-and-packaging.md).
+- **Economic buyer**: the person who controls budget and makes the final purchase decision. See [06-sales-process](06-sales-process.md).
+- **Enterprise motion**: dedicated account teams selling large, complex deals with procurement, legal, and security review. See [04-go-to-market-motions](04-go-to-market-motions.md).
+- **Entitlement**: a feature permission or limit resolved per account from plan plus overrides, checked by feature key. See [03-pricing-and-packaging](03-pricing-and-packaging.md).
+- **Event taxonomy**: the naming convention for events, `object_action` in snake_case and past tense. See [09-data-and-instrumentation](09-data-and-instrumentation.md).
+- **Expansion**: an increase in an account's MRR from seats, tier, usage, or add-ons. See [02-metrics](02-metrics.md).
+- **Expansion rate**: expansion MRR in a period divided by starting MRR. See [08-retention-and-expansion](08-retention-and-expansion.md).
+- **Experiment registry**: a record of each test's hypothesis, metrics, guardrails, sample size, dates, and decision. See [12-continuous-improvement](12-continuous-improvement.md).
+- **Field sales**: account executives with solution engineers selling multi-stakeholder deals, often in person. See [04-go-to-market-motions](04-go-to-market-motions.md).
+- **First value milestone**: the first time a customer gets the core outcome the product promises. See [07-onboarding-and-activation](07-onboarding-and-activation.md).
+- **Fit score**: a lead score based on firmographic and technographic match to the ICP. See [05-demand-and-acquisition](05-demand-and-acquisition.md).
+- **Forecast accuracy**: one minus the absolute forecast error relative to forecast, measured at fixed snapshot points. See [10-revenue-operations](10-revenue-operations.md).
+- **Forecast bias**: the average signed forecast error; persistent under-forecasting is sandbagging. See [10-revenue-operations](10-revenue-operations.md).
+- **Forecast category**: a rep judgment on whether a deal closes this period: commit, best case, pipeline, or omitted. See [06-sales-process](06-sales-process.md).
+- **Freemium**: a permanent free plan with limits used as the acquisition entry point. See [03-pricing-and-packaging](03-pricing-and-packaging.md).
+- **Fully loaded CAC**: CAC including media, salaries, commissions, benefits, tools, agencies, and allocated overhead. See [02-metrics](02-metrics.md).
+- **Funnel yield**: the product of stage conversion rates across the funnel. See [12-continuous-improvement](12-continuous-improvement.md).
+- **Give-get**: a discount granted only in exchange for something of value such as term, prepayment, or volume. See [06-sales-process](06-sales-process.md).
+- **Grandfathering**: keeping existing customers on an old price for a fixed or indefinite period after a price change. See [03-pricing-and-packaging](03-pricing-and-packaging.md).
+- **Gross margin**: revenue minus cost of revenue, divided by revenue. See [02-metrics](02-metrics.md).
+- **GRR (gross revenue retention)**: share of a cohort's starting recurring revenue retained after churn and contraction, excluding expansion; cannot exceed 100 percent. See [02-metrics](02-metrics.md).
+- **Guardrail metric**: a metric that must not degrade during an experiment, such as downstream conversion or churn. See [12-continuous-improvement](12-continuous-improvement.md).
+- **Handoff**: a rule-based transfer of a lead or account between teams with an owner and a service level. See [04-go-to-market-motions](04-go-to-market-motions.md).
+- **Handoff acceptance rate**: handoffs accepted divided by handoffs sent. See [04-go-to-market-motions](04-go-to-market-motions.md).
+- **Health score**: a per-account risk summary built from weighted inputs and validated against actual churn. See [08-retention-and-expansion](08-retention-and-expansion.md).
+- **Hybrid pricing**: a platform fee combined with seats or usage. See [03-pricing-and-packaging](03-pricing-and-packaging.md).
+- **ICP (ideal customer profile)**: the description of accounts that retain and expand, with exclusions. See [05-demand-and-acquisition](05-demand-and-acquisition.md).
+- **ICP match rate**: new customers meeting the ICP divided by new customers. See [05-demand-and-acquisition](05-demand-and-acquisition.md).
+- **Idempotency**: the property that processing the same event or request twice has the same effect as once. See [09-data-and-instrumentation](09-data-and-instrumentation.md).
+- **Identity resolution**: linking anonymous, user, account, billing, CRM, and support IDs through a crosswalk. See [09-data-and-instrumentation](09-data-and-instrumentation.md).
+- **Improvement cycle**: a time-boxed plan, do, check, act loop that tests one change against a named metric and a guardrail. See [12-continuous-improvement](12-continuous-improvement.md).
+- **Incrementality test**: a holdout, geographic split, or budget on/off test estimating a channel's causal impact. See [05-demand-and-acquisition](05-demand-and-acquisition.md).
+- **Input levers**: actions that buy more volume, such as ad spend or more outbound reps. See [12-continuous-improvement](12-continuous-improvement.md).
+- **Inside sales**: a remote sales team running demos and closing over video and email. See [04-go-to-market-motions](04-go-to-market-motions.md).
+- **Intent score**: a lead score based on recent buying actions, decayed over time. See [05-demand-and-acquisition](05-demand-and-acquisition.md).
+- **Involuntary churn**: churn caused by failed payment rather than a customer decision. See [08-retention-and-expansion](08-retention-and-expansion.md).
+- **Jobs To Be Done**: a public lens describing what a customer is trying to achieve; useful for personas. See [05-demand-and-acquisition](05-demand-and-acquisition.md).
+- **Lead**: an identified person with contact data and no qualification yet. See [01-customer-lifecycle](01-customer-lifecycle.md).
+- **Lifecycle stage**: a state in the customer lifecycle defined by an observable entry event, exit criteria, and one owner. See [01-customer-lifecycle](01-customer-lifecycle.md).
+- **Logo churn rate**: accounts churned in a period divided by paying accounts at the start of the period. See [02-metrics](02-metrics.md).
+- **LTV (customer lifetime value)**: expected gross profit from an account; use margin-adjusted, horizon-capped variants. See [02-metrics](02-metrics.md).
+- **LTV:CAC**: bounded margin LTV divided by fully loaded CAC. See [02-metrics](02-metrics.md).
+- **Magic Number**: change in ARR over a quarter divided by prior-quarter sales and marketing expense. See [02-metrics](02-metrics.md).
+- **MEDDICC**: a public qualification framework (metrics, economic buyer, decision criteria, decision process, identify pain, champion, competition) for complex deals. See [06-sales-process](06-sales-process.md).
+- **Metrics dictionary**: the versioned, single source of metric definitions, formulas, grains, sources, and owners. See [10-revenue-operations](10-revenue-operations.md).
+- **Metrics layer**: warehouse models that hold governed metric definitions in code. See [09-data-and-instrumentation](09-data-and-instrumentation.md).
+- **Motion**: the way customers are reached, sold, and served, such as self-serve, inside sales, or enterprise. See [04-go-to-market-motions](04-go-to-market-motions.md).
+- **MQL (marketing-qualified lead)**: a qualified lead whose basis is marketing fit and engagement. See [01-customer-lifecycle](01-customer-lifecycle.md).
+- **MRR (monthly recurring revenue)**: run-rate of active recurring subscription value normalized to a monthly amount. See [02-metrics](02-metrics.md).
+- **MRR bridge**: per-account classification of monthly MRR change into new, reactivation, expansion, contraction, and churn that must reconcile opening to closing MRR. See [02-metrics](02-metrics.md).
+- **Mutual action plan**: a shared, dated list of steps and owners on both sides from now to go-live. See [06-sales-process](06-sales-process.md).
+- **Net new ARR**: new plus expansion minus contraction minus churned ARR in a period. See [11-growth-stages](11-growth-stages.md).
+- **NPS and CSAT**: survey scores useful as signals and verbatims, not as retention metrics. See [08-retention-and-expansion](08-retention-and-expansion.md).
+- **NRR (net revenue retention)**: a cohort's current MRR divided by its MRR twelve months earlier, including expansion and excluding new logos. See [02-metrics](02-metrics.md).
+- **Onboarding churn**: churn of new accounts before activation or within the first 90 days. See [07-onboarding-and-activation](07-onboarding-and-activation.md).
+- **Opportunity**: a specific deal with an amount, close date, and next step. See [01-customer-lifecycle](01-customer-lifecycle.md).
+- **Paid CAC**: paid acquisition spend divided by customers attributed to paid channels; must be labeled as such. See [02-metrics](02-metrics.md).
+- **Partner motion**: resellers, integrators, marketplaces, or referral partners selling or influencing deals. See [04-go-to-market-motions](04-go-to-market-motions.md).
+- **Persona**: a description of a role inside the account, its goals, pains, criteria, and objections. See [05-demand-and-acquisition](05-demand-and-acquisition.md).
+- **Pipeline coverage**: qualified open pipeline closing in the period divided by remaining target. See [06-sales-process](06-sales-process.md).
+- **Plan mix**: share of paying accounts on each plan. See [03-pricing-and-packaging](03-pricing-and-packaging.md).
+- **POC (proof of concept)**: a time-boxed evaluation with written success criteria and an agreed purchase decision. See [06-sales-process](06-sales-process.md).
+- **PQL (product-qualified lead)**: a qualified lead whose basis is product usage plus fit. See [04-go-to-market-motions](04-go-to-market-motions.md).
+- **Priority score**: impact times confidence divided by effort, used to rank improvements. See [12-continuous-improvement](12-continuous-improvement.md).
+- **Product-led sales**: a self-serve start where sales engages accounts with strong usage or fit signals. See [04-go-to-market-motions](04-go-to-market-motions.md).
+- **Proration**: partial charge or credit for a mid-cycle plan or seat change. See [03-pricing-and-packaging](03-pricing-and-packaging.md).
+- **Ramp**: the percentage of full quota a new rep is expected to reach by tenure month. See [10-revenue-operations](10-revenue-operations.md).
+- **Reactivation**: MRR from a previously churned account that pays again, tracked as a separate movement. See [02-metrics](02-metrics.md).
+- **Realized price**: net billed revenue divided by units of the value metric. See [03-pricing-and-packaging](03-pricing-and-packaging.md).
+- **Renewal rate**: contracts renewed divided by contracts up for renewal, by count and amount. See [08-retention-and-expansion](08-retention-and-expansion.md).
+- **Revenue**: amount earned as service is delivered under accounting rules. See [02-metrics](02-metrics.md).
+- **Reverse ETL**: syncing modeled warehouse data into operational tools such as the CRM. See [09-data-and-instrumentation](09-data-and-instrumentation.md).
+- **Reverse trial**: a trial that starts on a paid tier and drops to the free plan after N days. See [03-pricing-and-packaging](03-pricing-and-packaging.md).
+- **RevOps (revenue operations)**: the function owning shared definitions, stages, systems, data, cadence, and planning math. See [10-revenue-operations](10-revenue-operations.md).
+- **Routing**: deterministic, versioned, logged assignment of each lead to one owner. See [05-demand-and-acquisition](05-demand-and-acquisition.md).
+- **Rule of 40**: revenue growth rate plus profit margin, in percent; state the profit measure. See [02-metrics](02-metrics.md).
+- **Rules of engagement**: written rules on who may contact which accounts and how credit is split. See [04-go-to-market-motions](04-go-to-market-motions.md).
+- **Sales cycle**: median days from qualification (or opportunity creation) to closed won. See [06-sales-process](06-sales-process.md).
+- **Save playbook**: a reason-specific action set to retain an at-risk account. See [08-retention-and-expansion](08-retention-and-expansion.md).
+- **Scenario model**: a per-segment model of stage volumes and rates used to compare input and conversion investments. See [12-continuous-improvement](12-continuous-improvement.md).
+- **Self-serve**: a motion where customers sign up, activate, and pay without talking to anyone. See [04-go-to-market-motions](04-go-to-market-motions.md).
+- **Signup**: the lifecycle stage for a person who created a product account with a verified email. See [01-customer-lifecycle](01-customer-lifecycle.md).
+- **SLA compliance**: handoffs actioned within the service level divided by handoffs sent. See [10-revenue-operations](10-revenue-operations.md).
+- **Speed to lead**: time from lead creation to first human touch; report median and 90th percentile. See [05-demand-and-acquisition](05-demand-and-acquisition.md).
+- **SQL (sales-qualified lead)**: a qualified lead accepted by sales after rep qualification. See [01-customer-lifecycle](01-customer-lifecycle.md).
+- **Stage conversion rate**: of entities entering stage A in a cohort, the share reaching stage B within a window. See [01-customer-lifecycle](01-customer-lifecycle.md).
+- **Stage velocity**: time in stage, reported as median and percentiles. See [01-customer-lifecycle](01-customer-lifecycle.md).
+- **System of record**: the single system whose value wins for an entity or stage in a conflict. See [09-data-and-instrumentation](09-data-and-instrumentation.md).
+- **Time to value (TTV)**: median time from signup or contract start to the first value milestone, reported with the never-reached share. See [07-onboarding-and-activation](07-onboarding-and-activation.md).
+- **Tracking plan**: a versioned file in the repository that defines every event and its properties and is checked in CI. See [09-data-and-instrumentation](09-data-and-instrumentation.md).
+- **Trial to paid conversion**: new paid accounts from a trial or free cohort divided by that cohort's signups. See [03-pricing-and-packaging](03-pricing-and-packaging.md).
+- **UTM parameters**: campaign tags (source, medium, campaign, content, term) persisted server side for attribution. See [05-demand-and-acquisition](05-demand-and-acquisition.md).
+- **Value metric**: the unit a price is charged on, chosen so revenue grows with customer value. See [03-pricing-and-packaging](03-pricing-and-packaging.md).
+- **Webhook**: a billing provider callback treated as an unordered, at-least-once stream. See [09-data-and-instrumentation](09-data-and-instrumentation.md).
+- **Win rate**: closed won divided by closed won plus closed lost, with a fixed and documented denominator. See [02-metrics](02-metrics.md).
